@@ -32,8 +32,10 @@ A modern, responsive e-learning and career development web platform for **Way2Sk
 
 ```text
 Way2Skills_Elearning/
+├── .env.example                  # Environment variables template
 ├── README.md                     # Project overview and documentation
 └── frontend/                     # Next.js web application
+    ├── .env.example              # Frontend environment variables template
     ├── public/                   # Static assets (logos, icons, vector graphics)
     ├── src/
     │   ├── app/                  # Next.js App Router pages and routes
@@ -81,7 +83,13 @@ npm install
 
 ### 2. Environment Variables
 
-Create a `.env.local` file inside the `frontend/` directory if you are connecting form submissions to the Google Apps Script endpoint:
+Copy the provided template to create `.env.local` inside the `frontend/` directory:
+
+```bash
+cp .env.example .env.local
+```
+
+Then configure the Google Apps Script Web App URL:
 
 ```env
 NEXT_PUBLIC_WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
