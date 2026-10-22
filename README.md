@@ -121,13 +121,16 @@ The application includes a serverless Google Apps Script backend located at `fro
 ### Setup Steps:
 1. Open [Google Apps Script](https://script.google.com/) and create a new project.
 2. Paste the contents of `frontend/src/app/Code.gs` into the script editor.
-3. Configure the following **Script Properties** under **Project Settings**:
-   - `COMPANY_EMAIL`: The recipient inbox for incoming admission and contact requests.
-   - `ALLOWED_RESPONSE_ORIGINS`: Comma-separated list of allowed origins (e.g., `http://localhost:3000, https://yourdomain.com`).
-4. Click **Deploy** > **New deployment** > Select **Web app**.
+3. Verify or update the top configuration:
+   - `ADMIN_EMAIL = "hr@durozen.in"`
+   - `EMAIL_FROM = "hr@durozen.in"`
+   - `SPREADSHEET_ID = "1zA1qFZH-WgwiW3Zffm0MTkoGFLVN1gzHy3he4mSeQJ8"`
+4. In the Apps Script toolbar dropdown, select `setupAllSheets` and click **Run** once:
+   - This automatically creates the **"Contact Leads"**, **"Admission Applications"**, and **"Career Applications"** tabs in your Google Sheet with formatted dark headers and grants the required permissions.
+5. Click **Deploy** > **New deployment** > Select **Web app**:
    - **Execute as**: Me
    - **Who has access**: Anyone
-5. Copy the deployed Web App URL and set it as `NEXT_PUBLIC_WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL` in your frontend environment.
+6. Copy the deployed Web App URL (ending in `/exec`) and set it as `NEXT_PUBLIC_WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL` in your frontend `.env.local`.
 
 ---
 
