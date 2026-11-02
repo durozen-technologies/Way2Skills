@@ -108,28 +108,53 @@ export default function AdmissionsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-sky-100 bg-white p-4 text-slate-900 shadow-[0_4px_12px_rgba(15,50,80,0.05)] sm:rounded-2xl sm:p-6">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-700">
-                Programme Overview
-              </p>
+           <div className="rounded-xl border border-sky-100 bg-white p-4 text-slate-900 shadow-[0_4px_12px_rgba(15,50,80,0.05)] sm:rounded-2xl sm:p-5">
+  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-700">
+    Explore Learning
+  </p>
 
-              <h2 className="mt-1.5 text-lg font-bold sm:mt-2 sm:text-xl md:text-2xl">
-                Full Stack Development
-              </h2>
+  <div className="mt-3 grid grid-cols-1 gap-2">
+    {/* Courses */}
+    <Link
+      href="/courses"
+      className="group flex items-center justify-between rounded-lg border border-sky-200 bg-sky-50 px-3 py-3 transition-all hover:border-sky-400 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+    >
+      <div>
+        <h3 className="text-sm font-bold text-slate-900">Courses</h3>
+        <p className="mt-0.5 text-xs text-slate-600">
+          Explore our courses.
+        </p>
+      </div>
 
-              <p className="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6">
-                Explore the fundamentals of modern web development and
-                practical software projects.
-              </p>
+      <span
+        className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-700 transition-transform group-hover:translate-x-1"
+        aria-hidden="true"
+      >
+        ↗
+      </span>
+    </Link>
 
-              <Link
-                href="/courses/full-stack-development"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-sky-700 transition-colors hover:text-blue-900 sm:mt-4 sm:text-sm"
-              >
-                View Programme Details
-                <span aria-hidden="true">↗</span>
-              </Link>
-            </div>
+    {/* Internships */}
+    <Link
+      href="/internship"
+      className="group flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-3 transition-all hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+    >
+      <div>
+        <h3 className="text-sm font-bold text-slate-900">Internships</h3>
+        <p className="mt-0.5 text-xs text-slate-600">
+          Gain practical experience.
+        </p>
+      </div>
+
+      <span
+        className="ml-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 transition-transform group-hover:translate-x-1"
+        aria-hidden="true"
+      >
+        ↗
+      </span>
+    </Link>
+  </div>
+</div>
           </aside>
 
           {/* Admission form */}

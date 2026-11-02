@@ -16,7 +16,7 @@ export default function ContactPage() {
           </p>
 
           <h1 className="mt-2 text-2xl font-bold tracking-tight sm:mt-3 sm:text-4xl">
-            Let’s talk about your goals.
+            Let's talk about your goals.
           </h1>
 
           <p className="mx-auto mt-2 max-w-xl text-xs leading-6 text-slate-600 sm:mt-3 sm:text-base">
@@ -156,25 +156,6 @@ export default function ContactPage() {
             Use the map to view our office location and plan your visit.
           </p>
         </div>
-      </section>
-
-      {/* Short enquiry CTA */}
-      <section className="border-t border-sky-200 bg-[#BDE8F7] px-4 py-6 text-center sm:px-8 sm:py-7">
-        <h2 className="text-lg font-bold sm:text-xl md:text-2xl">
-          Your next step starts here.
-        </h2>
-
-        <p className="mx-auto mt-1.5 max-w-lg text-xs leading-5 text-slate-600 sm:mt-2 sm:text-sm sm:leading-6">
-          Explore our programmes and discover opportunities to grow
-          your technical skills.
-        </p>
-
-        <Link
-          href="/courses/full-stack-development"
-          className="mt-3.5 inline-flex min-h-[42px] items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-800 sm:min-h-[44px] sm:px-5 sm:py-2.5 sm:text-sm"
-        >
-          Explore Full Stack Development ↗
-        </Link>
       </section>
 
       <Footer />

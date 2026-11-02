@@ -7,7 +7,7 @@ import Image from "next/image";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "About", href: "/#about" },
-  { label: "Courses", href: "/#course" },
+  { label: "Courses", href: "/courses" },
   { label: "Internship", href: "/internship" },
   { label: "Contact", href: "/contact" },
 ];
@@ -48,7 +48,7 @@ export default function Navbar() {
     >
       <nav
         aria-label="Main navigation"
-        className="flex items-center justify-between rounded-full border border-white/40 bg-white/40 px-4 py-2 shadow-sm backdrop-blur-xl transition-all duration-300 sm:px-7 sm:py-2.5 lg:px-9"
+        className="flex items-center justify-between rounded-full border border-white/40 bg-white/80 px-4 py-2 shadow-sm backdrop-blur-xl transition-all duration-300 sm:px-7 sm:py-2.5 lg:px-9"
       >
         <Link
           href="/"
@@ -146,13 +146,13 @@ export default function Navbar() {
             ))}
 
             <div className="mt-2 flex flex-col gap-2 border-t border-slate-100 pt-2">
-              <Link
+              {/* <Link
                 href="/login"
                 onClick={() => setMenuOpen(false)}
                 className="flex min-h-[44px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-800 transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
                 Login
-              </Link>
+              </Link> */}
               <Link
                 href="/admissions"
                 onClick={() => setMenuOpen(false)}

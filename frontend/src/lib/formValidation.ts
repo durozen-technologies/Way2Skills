@@ -22,10 +22,6 @@ export const VALID_EDUCATION_LEVELS = [
   "other",
 ] as const;
 
-export const VALID_COURSES = [
-  "full-stack-development",
-] as const;
-
 /**
  * Validates a name field. Must not be empty or contain only whitespace.
  */
@@ -117,7 +113,7 @@ export function validateCourse(value: string): string | null {
   if (!trimmed) {
     return "Please select a programme.";
   }
-  if (!VALID_COURSES.includes(trimmed as (typeof VALID_COURSES)[number])) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trimmed) || trimmed.length > 180) {
     return "Please select a valid programme.";
   }
   return null;

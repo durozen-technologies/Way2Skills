@@ -89,17 +89,17 @@ export default function LearningJourney() {
 
           {/* Floating 3D Laptop */}
           <div className="relative flex min-h-[220px] items-center justify-center overflow-hidden sm:min-h-[320px] lg:min-h-[350px]">
-            {/* Blue ambient glow */}
             <div
               aria-hidden="true"
-              className="absolute h-52 w-52 rounded-full bg-sky-500/20 blur-3xl sm:h-64 sm:w-64"
+              className="w2s-course-orb absolute -right-12 top-16 z-0 h-48 w-48 rounded-full"
             />
-
-            {/* Orbit ring */}
             <div
               aria-hidden="true"
-              className="absolute h-44 w-[85%] rounded-full border border-sky-400/25 sm:h-52"
-              style={{ transform: "rotate(-20deg)" }}
+              className="w2s-course-ring absolute -right-5 top-24 z-0 h-40 w-40 rounded-full border"
+            />
+            <div
+              aria-hidden="true"
+              className="w2s-course-ring absolute right-4 top-32 z-0 h-28 w-28 rounded-full border"
             />
 
             {/* Laptop assembly */}

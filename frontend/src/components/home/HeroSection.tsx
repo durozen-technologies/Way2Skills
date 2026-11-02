@@ -10,6 +10,8 @@ export default function HeroSection() {
       id="home"
       className="way2-hero relative isolate flex flex-col justify-start overflow-hidden px-5 pb-6 pt-24 text-[#101820] sm:px-8 sm:pb-8 sm:pt-26 lg:px-12 lg:pb-8 lg:pt-24 xl:pt-28"
     >
+      {/* background image */}
+      <div aria-hidden="true" className="way2-hero-background"/>
       {/* Background effects */}
       <div aria-hidden="true" className="way2-hero-glow" />
       <div aria-hidden="true" className="way2-hero-grid" />
@@ -27,11 +29,11 @@ export default function HeroSection() {
 
             <span className="hero-word-window mt-1.5 sm:mt-2 text-red-600">
               <span className="hero-word-track">
-                <span>Reality.</span>
-                <span>Action.</span>
-                <span>Tomorrow.</span>
-                <span>Next Level.</span>
-                <span>Reality.</span>
+                <span >Reality.</span>
+                <span className="text-black">Action.</span>
+                <span className="text-blue">Tomorrow.</span>
+                <span className="text-black">Next Level.</span>
+                <span >Reality.</span>
               </span>
             </span>
           </h1>

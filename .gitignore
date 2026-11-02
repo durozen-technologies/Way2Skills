@@ -25,16 +25,25 @@
 *.pem
 **/.git/
 
-
 # debug
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.turbo/
+
+# editors / OS
+.idea/
+.vscode/
+.fleet/
+*.swp
 
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+!frontend/.env.example
+!backend/.env.example
 
 # vercel
 .vercel

@@ -19,10 +19,6 @@ const footerLinks = {
     { label: "Student Reviews", href: "/#student-stories" },
   ],
   Programme: [
-    {
-      label: "Full Stack Development",
-      href: "/courses/full-stack-development",
-    },
     { label: "Learning Journey", href: "/#learning-journey" },
     { label: "Admissions", href: "/#admission" },
     { label: "FAQs", href: "/#faq" },

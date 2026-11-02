@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
   type RefObject,
 } from "react";
@@ -703,15 +704,21 @@ function Portal() {
         <meshBasicMaterial color="#e0f7ff" transparent opacity={0.8} toneMapped={false} />
       </mesh>
       <group ref={ticks}>
-        <instancedMesh
-          ref={instRef}
-          args={[undefined, undefined, tickMatrices.length]}
-        >
-          <boxGeometry args={[1, 1, 1]} />
-          <meshBasicMaterial color="#bae6fd" transparent opacity={0.85} toneMapped={false} />
-        </instancedMesh>
-      </group>
-    </group>
+  <instancedMesh
+    ref={instRef}
+    args={[undefined, undefined, tickMatrices.length]}
+  >
+    <boxGeometry args={[1, 1, 1]} />
+    <meshBasicMaterial
+      color="#bae6fd"
+      transparent
+      opacity={0.85}
+      toneMapped={false}
+    />
+  </instancedMesh>
+</group>
+
+</group>
   );
 }
 
@@ -857,6 +864,132 @@ function Panel({
   );
 }
 
+
+function LogoPanel({
+  position,
+  phase,
+}: {
+  position: V3;
+  phase: number;
+}) {
+  const group = useRef<THREE.Group>(null);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const loader = new THREE.TextureLoader();
+
+    loader.load(
+      "/logo/ASA.jpeg",
+      (loadedTexture) => {
+        if (!active) {
+          loadedTexture.dispose();
+          return;
+        }
+
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.anisotropy = 8;
+        loadedTexture.needsUpdate = true;
+        setTexture(loadedTexture);
+      },
+      undefined,
+      (error) => {
+        console.error(
+          "Failed to load /logo/ASA.jpeg. Check public/logo/ASA.jpeg",
+          error,
+        );
+      },
+    );
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => texture?.dispose();
+  }, [texture]);
+
+  useFrame((state) => {
+    if (!group.current) return;
+
+    // Keep the logo upright and floating, without rotating it.
+    group.current.position.y =
+      position[1] + Math.sin(state.clock.elapsedTime * 0.6 + phase) * 0.08;
+
+    group.current.rotation.set(0, 0, 0);
+  });
+
+  return (
+    <group ref={group} position={position}>
+      {/* Cyan outer glow */}
+      <mesh position={[0, 0, -0.04]} renderOrder={1000}>
+        <planeGeometry args={[2.35, 1.65]} />
+        <meshBasicMaterial
+          color="#22d3ee"
+          transparent
+          opacity={0.25}
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Bright cyan border */}
+      <mesh position={[0, 0, -0.025]} renderOrder={1001}>
+        <planeGeometry args={[2.2, 1.5]} />
+        <meshBasicMaterial
+          color="#38bdf8"
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* White background behind the logo */}
+      <mesh position={[0, 0, 0]} renderOrder={1002}>
+        <planeGeometry args={[2.08, 1.38]} />
+        <meshBasicMaterial
+          color="#ffffff"
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Actual Way2Skills logo */}
+      {texture && (
+        <mesh position={[0, 0, 0.025]} renderOrder={1003}>
+          <planeGeometry args={[1.98, 1.28]} />
+          <meshBasicMaterial
+            map={texture}
+            color="#ffffff"
+            side={THREE.DoubleSide}
+            depthTest={false}
+            depthWrite={false}
+            toneMapped={false}
+            transparent={false}
+            opacity={1}
+          />
+        </mesh>
+      )}
+
+      {/* Fallback text if the image has not loaded yet */}
+      {!texture && (
+        <mesh position={[0, 0, 0.03]} renderOrder={1003}>
+          <planeGeometry args={[1.98, 1.28]} />
+          <meshBasicMaterial
+            color="#ffffff"
+            depthTest={false}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Crystals and red spheres                                                   */
 /* -------------------------------------------------------------------------- */
@@ -966,18 +1099,50 @@ function Composition() {
     root.current.rotation.y = Math.sin(time * 0.23) * 0.05;
   });
 
-  return (
-    <group ref={root} scale={fit} position={[0, -1.0 * fit, 0]}>
-      <RockPlatform />
-      <Student />
-      <Portal />
-      <Ribbon />
-      <Panel kind="code" position={[-3.0, 2.55, 0.9]} rotationY={0.42} phase={0.3} />
-      <Panel kind="cap" position={[3.05, 3.0, 0.2]} rotationY={-0.4} scale={0.85} phase={2.0} />
-      <Panel kind="chart" position={[3.35, 0.45, 1.1]} rotationY={-0.5} scale={0.95} phase={4.1} />
-      <Accents />
-    </group>
-  );
+  
+return (
+  <group
+    ref={root}
+    scale={fit}
+    position={[0, -1.0 * fit, 0]}
+  >
+    <RockPlatform />
+    <Student />
+    <Portal />
+    <Ribbon />
+
+    <LogoPanel
+      position={[-3.0, 2.55, 0.9]}
+      phase={0.3}
+    />
+
+    <Panel
+      kind="code"
+      position={[-3.0, -0.5, 0.9]}
+      rotationY={0.42}
+      phase={1.2}
+    />
+
+    <Panel
+      kind="cap"
+      position={[3.05, 3.0, 0.2]}
+      rotationY={-0.4}
+      scale={0.85}
+      phase={2.0}
+    />
+
+    <Panel
+      kind="chart"
+      position={[3.35, 0.45, 1.1]}
+      rotationY={-0.5}
+      scale={0.95}
+      phase={4.1}
+    />
+
+    <Accents />
+  </group>
+);
+
 }
 
 function Rig() {

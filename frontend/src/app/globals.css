@@ -167,33 +167,56 @@ html {
   margin-inline: auto;
   color: #101820;
   background-color: #e8f7fc;
-  background-image:
-    radial-gradient(
-      ellipse at 8% 42%,
-      rgba(125, 211, 252, 0.42) 0%,
-      transparent 46%
-    ),
-    radial-gradient(
-      ellipse at 88% 16%,
-      rgba(186, 230, 253, 0.42) 0%,
-      transparent 43%
-    ),
-    radial-gradient(
-      ellipse at 50% 65%,
-      rgba(255, 255, 255, 0.72) 0%,
-      transparent 62%
-    ),
-    linear-gradient(
-      120deg,
-      #d4f1fc 0%,
-      #e8f7fc 48%,
-      #eff9fd 100%
-    );
 }
 
 .way2-home-surface .way2-hero {
-  background: transparent;
   background-image: none;
+  background-color: #e8f7fc;
+}
+
+.way2-hero-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/home-pg.jpeg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.way2-home-surface .way2-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.4) 0%,
+    rgba(15, 23, 42, 0.26) 42%,
+    rgba(15, 23, 42, 0.12) 72%,
+    rgba(15, 23, 42, 0.06) 100%
+  );
+}
+
+.way2-home-surface .way2-hero-glow,
+.way2-home-surface .way2-hero-grid,
+.way2-home-surface .way2-hero-vignette {
+  display: none;
+}
+
+.way2-home-surface .way2-hero-content {
+  color: #f8fafc;
+}
+
+.way2-home-surface .way2-hero-content p {
+  color: rgba(241, 245, 249, 0.94);
+}
+
+.way2-home-surface .hero-word-track {
+  color: #EF4444;
 }
 
 /* Atmospheric lighting */
@@ -244,14 +267,6 @@ html {
     ellipse at center,
     transparent 48%,
     rgba(232, 247, 252, 0.28) 100%
-  );
-}
-
-.way2-home-surface .way2-hero-vignette {
-  background: linear-gradient(
-    to bottom,
-    transparent 75%,
-    rgba(232, 247, 252, 0.12) 100%
   );
 }
 
@@ -528,6 +543,14 @@ html {
     min-height: auto;
   }
 
+  .way2-home-surface .way2-hero {
+    background-position: center 35%;
+  }
+
+  .way2-home-surface .way2-hero::before {
+    background: rgba(15, 23, 42, 0.24);
+  }
+
   .way2-hero-layout {
     grid-template-columns: 1fr;
     gap: 1.75rem;
@@ -614,10 +637,15 @@ html {
   position: relative;
   isolation: isolate;
   width: 100%;
-  max-width: 100%;
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  transform: perspective(1000px) rotateX(var(--course-tilt-x, 0deg))
+    rotateY(var(--course-tilt-y, 0deg));
+  transition:
+    transform 180ms ease-out,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+  border: 1px solid rgba(125, 211, 252, 0.22);
   background: linear-gradient(
     145deg,
     #1b2a39 0%,
@@ -628,6 +656,21 @@ html {
     0 25px 60px rgba(15, 40, 60, 0.17),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   will-change: transform;
+}
+
+.w2s-course-card::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.025),
+    transparent 45%,
+    rgba(2, 132, 199, 0.035)
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .w2s-course-card::before {
@@ -653,15 +696,15 @@ html {
 }
 
 .w2s-course-card:hover {
-  border-color: rgba(56, 189, 248, 0.9);
+  border-color: color-mix(in srgb, var(--course-accent, #38bdf8) 78%, transparent);
   box-shadow:
-    0 35px 75px rgba(14, 116, 144, 0.2),
-    0 0 0 1px rgba(56, 189, 248, 0.14),
+    0 30px 65px rgba(14, 116, 144, 0.23),
+    0 0 0 1px color-mix(in srgb, var(--course-accent, #38bdf8) 18%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* 3D depth for inner content */
-.w2s-course-card > .relative.z-10 {
+.w2s-course-card > .relative.z-10:not(.w2s-course-orb):not(.w2s-course-ring) {
   transform: translateZ(20px);
 }
 
@@ -681,6 +724,30 @@ html {
   transition:
     transform 500ms ease,
     opacity 500ms ease;
+}
+
+.w2s-course-ring {
+  pointer-events: none;
+  border-color: #000;
+  transition:
+    transform 500ms ease,
+    border-color 300ms ease;
+}
+
+.w2s-course-card:hover .w2s-course-ring {
+  transform: scale(1.06);
+  border-color: #000;
+}
+
+.w2s-course-icon {
+  transform: translateZ(28px);
+  box-shadow:
+    0 10px 24px rgba(14, 116, 144, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.w2s-course-accent {
+  opacity: 0.85;
 }
 
 .w2s-course-card:hover .w2s-course-orb {
@@ -703,6 +770,8 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .w2s-course-card,
   .w2s-course-orb,
+  .w2s-course-ring,
+  .w2s-course-icon,
   .w2s-category-card {
     animation: none !important;
     transition: none !important;
@@ -1005,7 +1074,7 @@ html {
   gap: 24px;
   padding-right: 24px;
   white-space: nowrap;
-  color: #155681;
+  color: #111111;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
