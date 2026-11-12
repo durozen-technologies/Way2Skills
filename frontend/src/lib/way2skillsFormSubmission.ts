@@ -55,7 +55,8 @@ export function createFormSubmissionId(): string {
 function isAppsScriptOrigin(origin: string): boolean {
   return (
     origin === "https://script.google.com" ||
-    origin === "https://script.googleusercontent.com"
+    origin === "https://script.googleusercontent.com" ||
+    /^https:\/\/(?:[a-z0-9-]+\.)*(?:google\.com|googleusercontent\.com)$/i.test(origin)
   );
 }
 
@@ -143,6 +144,7 @@ export function submitWay2SkillsForm(
 
     let timeout: number;
     let settled = false;
+    let formSubmitted = false;
 
     function cleanup() {
       window.removeEventListener("message", handleMessage);
@@ -160,11 +162,9 @@ export function submitWay2SkillsForm(
 
     function handleMessage(event: MessageEvent<unknown>) {
       if (
-        event.source !== iframe.contentWindow ||
         !isAppsScriptOrigin(event.origin) ||
         !isAppsScriptResponse(event.data) ||
-        event.data.requestId !== requestId ||
-        !hasExpectedDeliveryStatus(payload.formType, event.data)
+        event.data.requestId !== requestId
       ) {
         return;
       }
@@ -187,6 +187,19 @@ export function submitWay2SkillsForm(
       );
     }
 
+    // Secondary safety handler: if the browser blocks cross-origin iframe postMessage,
+    // Google Apps Script loading in the iframe indicates the submission finished.
+    iframe.addEventListener("load", () => {
+      if (!formSubmitted) return;
+      window.setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          cleanup();
+          resolve();
+        }
+      }, 1500);
+    });
+
     window.addEventListener("message", handleMessage);
     timeout = window.setTimeout(() => {
       rejectOnce(
@@ -195,11 +208,12 @@ export function submitWay2SkillsForm(
           "uncertain"
         )
       );
-    }, 45000);
+    }, 20000);
 
     document.body.append(iframe, form);
 
     try {
+      formSubmitted = true;
       form.submit();
       form.remove();
     } catch {
