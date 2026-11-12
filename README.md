@@ -103,6 +103,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
+### Create an admin account with Docker
+
+The backend container applies database migrations automatically before it
+starts the API. After the Docker Compose services are running, create an admin
+account with:
+
+```bash
+docker compose exec backend python -m app.cli create-admin
+```
+
+The command prompts for the admin email and password.
+
 ### 4. Production Build
 
 To build the project for production and start the optimized server:
