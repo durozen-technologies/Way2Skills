@@ -46,3 +46,24 @@ def test_apps_script_url_rejects_non_google_hosts():
                 "https://attacker.example/macros/s/deployment/exec"
             ),
         )
+
+
+@pytest.mark.parametrize(
+    "raw_url",
+    [
+        'https://script.google.com/macros/s/AKfycb...Ba_1NovUQZj9eVl/exec%22',
+        'https://script.google.com/macros/s/AKfycb...Ba_1NovUQZj9eVl/exec"',
+        '"https://script.google.com/macros/s/AKfycb...Ba_1NovUQZj9eVl/exec"',
+        "'https://script.google.com/macros/s/AKfycb...Ba_1NovUQZj9eVl/exec'",
+        "https://script.google.com/macros/s/AKfycb...Ba_1NovUQZj9eVl/exec",
+    ],
+)
+def test_apps_script_url_normalizes_quotes_and_encoded_quotes(raw_url: str):
+    settings = Settings(
+        _env_file=None,
+        way2skills_apps_script_web_app_url=raw_url,
+    )
+    assert (
+        settings.way2skills_apps_script_web_app_url
+        == "https://script.google.com/macros/s/AKfycb...Ba_1NovUQZj9eVl/exec"
+    )
