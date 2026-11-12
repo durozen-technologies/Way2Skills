@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    ARRAY,
     Boolean,
     CheckConstraint,
     DateTime,
@@ -63,8 +64,12 @@ class Course(UUIDPrimaryKeyMixin, Base):
     price: Mapped[float | None] = mapped_column(Numeric(10, 2))
     curriculum: Mapped[str | None] = mapped_column(Text)
     benefits: Mapped[str | None] = mapped_column(Text)
-    certificates: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
-    syllabus: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    certificates: Mapped[list[str]] = mapped_column(
+        ARRAY(Text).with_variant(JSON(), "sqlite"), nullable=False, default=list
+    )
+    syllabus: Mapped[list[str]] = mapped_column(
+        ARRAY(Text).with_variant(JSON(), "sqlite"), nullable=False, default=list
+    )
     card_theme: Mapped[str | None] = mapped_column(String(20))
     is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     is_featured: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

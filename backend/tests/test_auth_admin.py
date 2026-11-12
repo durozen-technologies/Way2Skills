@@ -19,22 +19,13 @@ def test_admin_login_success_and_me(client, admin_account):
     assert "password_hash" not in profile.json()
 
 
-def test_legacy_integer_admin_tokens_remain_supported(client, admin_account):
-    test_client, testing_session = client
-    with testing_session() as session:
-        from app.models.admin import Admin
-
-        admin = session.get(Admin, admin_account)
-        assert admin is not None
-        admin.legacy_id = 29
-        session.commit()
-
+def test_legacy_integer_admin_tokens_are_rejected(client):
+    test_client, _ = client
     token, _ = create_access_token("29", get_settings())
     profile = test_client.get(
         "/api/auth/me", headers={"Authorization": f"Bearer {token}"}
     )
-    assert profile.status_code == 200
-    assert profile.json()["id"] == str(admin_account)
+    assert profile.status_code == 401
 
 
 def test_admin_login_failure_is_generic(client, admin_account):

@@ -1,12 +1,9 @@
+
 "use client";
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
-/**
- * Lightweight, CSS-only placeholder shown while the 3D bundle downloads
- * (and kept as the permanent fallback if WebGL is unavailable).
- */
 function SceneFallback() {
   return (
     <div className="absolute inset-0 flex items-center justify-center">
@@ -20,41 +17,83 @@ function SceneFallback() {
   );
 }
 
-// Loaded only in the browser, so Three.js never runs during SSR.
 const Hero3DScene = dynamic(() => import("./Hero3DScene"), {
   ssr: false,
 });
 
 function hasWebGL() {
   try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl2") ||
+      canvas.getContext("webgl");
+
+    if (!gl) return false;
+
+    const loseContext = gl.getExtension("WEBGL_lose_context");
+    loseContext?.loseContext();
+
+    return true;
   } catch {
     return false;
   }
 }
 
-export default function Hero3DLoader({ className = "" }: { className?: string }) {
+export default function Hero3DLoader({
+  className = "",
+}: {
+  className?: string;
+}) {
   const wrapper = useRef<HTMLDivElement>(null);
+
   const [shouldMount, setShouldMount] = useState(false);
-  const [inView, setInView] = useState(true);
+  const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
-  const [webgl, setWebgl] = useState(true);
+  const [webgl, setWebgl] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
 
   useEffect(() => {
     setWebgl(hasWebGL());
-    const el = wrapper.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
+
+    const element = wrapper.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
       ([entry]) => {
-        setInView(entry.isIntersecting);
-        if (entry.isIntersecting) setShouldMount(true);
+        const visible = entry.isIntersecting;
+
+        setInView(visible);
+
+        if (visible) {
+          setShouldMount(true);
+        }
       },
-      { rootMargin: "200px" },
+      {
+        rootMargin: "80px",
+        threshold: 0.01,
+      }
     );
-    io.observe(el);
-    return () => io.disconnect();
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const updateVisibility = () => {
+      setPageVisible(!document.hidden);
+    };
+
+    document.addEventListener("visibilitychange", updateVisibility);
+
+    return () =>
+      document.removeEventListener(
+        "visibilitychange",
+        updateVisibility
+      );
+  }, []);
+
+  const active = inView && pageVisible;
 
   return (
     <div
@@ -62,20 +101,22 @@ export default function Hero3DLoader({ className = "" }: { className?: string })
       aria-hidden="true"
       className={`pointer-events-none relative h-full w-full ${className}`}
     >
-      <div
-        className={`absolute inset-0 transition-opacity duration-700 ${
-          ready ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <SceneFallback />
-      </div>
+      {!ready && (
+        <div className="absolute inset-0">
+          <SceneFallback />
+        </div>
+      )}
+
       {shouldMount && webgl && (
         <div
-          className={`absolute inset-0 transition-opacity duration-700 ${
+          className={`absolute inset-0 transition-opacity duration-500 ${
             ready ? "opacity-100" : "opacity-0"
           }`}
         >
-          <Hero3DScene active={inView} onReady={() => setReady(true)} />
+          <Hero3DScene
+            active={active}
+            onReady={() => setReady(true)}
+          />
         </div>
       )}
     </div>

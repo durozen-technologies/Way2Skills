@@ -227,3 +227,7 @@ class CourseRead(ORMModel):
         elif self.internship_period is None and self.internship_duration_months is not None:
             self.internship_period = self.internship_duration_months
         return self
+
+
+class CourseCardRead(CourseRead):
+    accepted_count: int = 0

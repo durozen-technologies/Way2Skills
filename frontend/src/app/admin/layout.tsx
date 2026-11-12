@@ -1,21 +1,25 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BookOpen,
   BriefcaseBusiness,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   Menu,
   MessageSquareText,
+  Inbox,
   X,
 } from "lucide-react";
 import { AdminAuthProvider, AdminLogin, useAdminAuth } from "@/components/admin/AdminAuth";
 
 const navigation = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/enquiries", label: "Enquiries", icon: Inbox },
+  { href: "/admin/admissions", label: "Admissions", icon: ClipboardList },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/internships", label: "Internships", icon: BriefcaseBusiness },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquareText },
@@ -130,7 +134,18 @@ function AdminShell({ children }: { children: ReactNode }) {
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <AdminAuthProvider>
-      <AdminShell>{children}</AdminShell>
+      <Suspense
+        fallback={
+          <p
+            className="p-6 text-sm text-slate-600"
+            role="status"
+          >
+            Loading admin…
+          </p>
+        }
+      >
+        <AdminShell>{children}</AdminShell>
+      </Suspense>
     </AdminAuthProvider>
   );
 }

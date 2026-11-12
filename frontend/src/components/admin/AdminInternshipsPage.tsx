@@ -386,15 +386,25 @@ export default function AdminInternshipsPage() {
                       {internship.stipend_details && ` · ${internship.stipend_details}`}
                     </p>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      internship.is_published
-                        ? "bg-emerald-50 text-emerald-800"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {internship.is_published ? "Published" : "Draft"}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        internship.is_published
+                          ? "bg-emerald-50 text-emerald-800"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {internship.is_published ? "Published" : "Draft"}
+                    </span>
+                    <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5">
+                      <p className="text-2xl font-bold leading-none text-emerald-800">
+                        {internship.accepted_count ?? 0}
+                      </p>
+                      <p className="text-[11px] font-semibold text-emerald-700">
+                        Accepted
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <p className="mt-3 sm:mt-4 line-clamp-2 text-sm leading-6 text-slate-700 break-words">

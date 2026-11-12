@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 from sqlalchemy import (
+    ARRAY,
     Boolean,
     CheckConstraint,
     Date,
@@ -35,10 +36,14 @@ class Internship(UUIDPrimaryKeyMixin, Base):
     duration_months: Mapped[int] = mapped_column(Integer, nullable=False)
     eligibility: Mapped[str | None] = mapped_column(Text)
     cover_image_url: Mapped[str | None] = mapped_column(String(2048))
-    skills: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
-    certificates: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    skills: Mapped[list[str]] = mapped_column(
+        ARRAY(Text).with_variant(JSON(), "sqlite"), nullable=False, default=list
+    )
+    certificates: Mapped[list[str]] = mapped_column(
+        ARRAY(Text).with_variant(JSON(), "sqlite"), nullable=False, default=list
+    )
     learning_outcomes: Mapped[list[str]] = mapped_column(
-        JSON, nullable=False, default=list
+        ARRAY(Text).with_variant(JSON(), "sqlite"), nullable=False, default=list
     )
     internship_type: Mapped[str | None] = mapped_column(String(20))
     stipend_details: Mapped[str | None] = mapped_column(Text)

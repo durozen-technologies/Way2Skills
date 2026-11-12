@@ -15,6 +15,7 @@ export const COURSE_CERTIFICATES: CourseCertificate[] = [
 
 export type Course = {
   id: string;
+  accepted_count?: number;
   title: string;
   slug: string;
   short_description: string;
@@ -47,6 +48,12 @@ export type CoursePage = {
   offset: number;
 };
 
+export type SubmissionReceipt = {
+  id: string;
+  status: string;
+  created_at: string;
+};
+
 export type CourseCategory = {
   name: string;
   course_count: number;
@@ -54,6 +61,35 @@ export type CourseCategory = {
 
 const API_URL =
   process.env.NEXT_PUBLIC_WAY2SKILLS_API_URL?.trim().replace(/\/+$/, "") ?? "";
+
+function formatValidationErrors(errors: unknown): string | null {
+  if (!Array.isArray(errors)) return null;
+
+  const messages = errors.flatMap((error: unknown) => {
+    if (
+      !error ||
+      typeof error !== "object" ||
+      !("msg" in error) ||
+      typeof error.msg !== "string"
+    ) {
+      return [];
+    }
+
+    const location =
+      "loc" in error && Array.isArray(error.loc)
+        ? error.loc
+          .filter(
+            (part): part is string | number =>
+              typeof part === "string" || typeof part === "number"
+          )
+          .filter((part) => part !== "body")
+          .join(".")
+        : "";
+    return [location ? `${location}: ${error.msg}` : error.msg];
+  });
+
+  return messages.length > 0 ? messages.join("; ") : null;
+}
 
 export async function courseRequest<T>(
   path: string,
@@ -88,10 +124,6 @@ export async function courseRequest<T>(
   } catch (error) {
     if (!axios.isAxiosError(error)) throw error;
 
-    if (error.code === "ERR_BAD_RESPONSE") {
-      throw new Error("The API returned an invalid response.");
-    }
-
     if (error.response) {
       const { data, status } = error.response;
       const detail =
@@ -101,7 +133,17 @@ export async function courseRequest<T>(
         typeof data.detail === "string"
           ? data.detail
           : `The API request failed (${status}).`;
-      throw new Error(detail);
+      const validationErrors =
+        data && typeof data === "object" && "errors" in data
+          ? formatValidationErrors(data.errors)
+          : null;
+      throw new Error(
+        validationErrors ? `${detail}: ${validationErrors}` : detail
+      );
+    }
+
+    if (error.code === "ERR_BAD_RESPONSE") {
+      throw new Error("The API returned an invalid response.");
     }
 
     throw error;
