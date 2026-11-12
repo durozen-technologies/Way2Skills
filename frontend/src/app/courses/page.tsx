@@ -18,12 +18,16 @@ export default function CoursesPage() {
     let active = true;
 
     Promise.all([
-      courseRequest<Course[]>("/api/courses"),
-      courseRequest<Course[]>("/api/programmes"),
+      courseRequest<Course[]>("/api/courses").catch(() => []),
+      courseRequest<Course[]>("/api/programmes").catch(() => []),
     ])
       .then(([courseItems, programmeItems]) => {
         if (active) {
-          setCourses([...courseItems, ...programmeItems]);
+          const items = [
+            ...(Array.isArray(courseItems) ? courseItems : []),
+            ...(Array.isArray(programmeItems) ? programmeItems : []),
+          ];
+          setCourses(items);
         }
       })
       .catch((requestError: unknown) => {

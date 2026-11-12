@@ -13,11 +13,17 @@ export default function FeaturedCourse() {
   useEffect(() => {
     let active = true;
     Promise.all([
-      courseRequest<Course[]>("/api/courses"),
-      courseRequest<Course[]>("/api/programmes"),
+      courseRequest<Course[]>("/api/courses").catch(() => []),
+      courseRequest<Course[]>("/api/programmes").catch(() => []),
     ])
       .then(([courseItems, programmeItems]) => {
-        if (active) setCourses([...courseItems, ...programmeItems]);
+        if (active) {
+          const items = [
+            ...(Array.isArray(courseItems) ? courseItems : []),
+            ...(Array.isArray(programmeItems) ? programmeItems : []),
+          ];
+          setCourses(items);
+        }
       })
       .catch((requestError: unknown) => {
         if (active) {
