@@ -3,7 +3,10 @@ from uuid import UUID
 from sqlalchemy import select
 
 from app.models.admission import Admission
+from app.models.course import Course
 from app.models.contact import Contact
+from app.models.enums import CourseType
+from app.models.internship import Internship
 
 CONTACT = {
     "name": "Taylor Student",
@@ -20,6 +23,20 @@ ADMISSION = {
     "course": "full-stack-development",
     "message": "Please contact me about the course.",
 }
+
+
+def test_course_string_lists_round_trip(client, published_course):
+    _, testing_session = client
+    with testing_session() as session:
+        course = session.get(Course, published_course)
+        assert course is not None
+        assert course.syllabus == ["Frontend fundamentals", "Backend fundamentals"]
+        course.certificates = ["Course completion — Way2Skills"]
+        session.commit()
+        session.expire_all()
+        saved = session.get(Course, published_course)
+        assert saved is not None
+        assert saved.certificates == ["Course completion — Way2Skills"]
 
 
 def test_contact_submission_persists_and_normalizes(client):
@@ -74,6 +91,59 @@ def test_admission_submission_persists_with_pending_status(client, published_cou
         assert record is not None
         assert record.education == "undergraduate"
         assert record.course == "full-stack-development"
+        assert record.application_type == CourseType.PROGRAMME
+
+
+def test_admission_submission_persists_published_internship(client):
+    test_client, testing_session = client
+    with testing_session() as session:
+        internship = Internship(
+            title="Python Internship",
+            slug="python-internship",
+            short_description="Build practical Python skills.",
+            full_description="A published Python internship.",
+            duration_months=3,
+            is_published=True,
+        )
+        session.add(internship)
+        session.commit()
+
+    response = test_client.post(
+        "/api/admissions",
+        json={**ADMISSION, "course": "python-internship", "application_type": "internship"},
+    )
+
+    assert response.status_code == 201
+    with testing_session() as session:
+        record = session.scalar(
+            select(Admission).where(Admission.id == UUID(response.json()["id"]))
+        )
+        assert record is not None
+        assert record.course == "python-internship"
+        assert record.application_type == CourseType.INTERNSHIP
+
+
+def test_admission_rejects_unpublished_internship(client):
+    test_client, testing_session = client
+    with testing_session() as session:
+        session.add(
+            Internship(
+                title="Python Internship",
+                slug="python-internship",
+                short_description="Build practical Python skills.",
+                full_description="An unpublished Python internship.",
+                duration_months=3,
+                is_published=False,
+            )
+        )
+        session.commit()
+
+    response = test_client.post(
+        "/api/admissions",
+        json={**ADMISSION, "course": "python-internship", "application_type": "internship"},
+    )
+
+    assert response.status_code == 422
 
 
 def test_admission_accepts_all_supported_education_values(client, published_course):
@@ -81,7 +151,12 @@ def test_admission_accepts_all_supported_education_values(client, published_cour
     for education in ("school", "diploma", "undergraduate", "graduate", "other"):
         response = test_client.post(
             "/api/admissions",
-            json={**ADMISSION, "education": education, "message": ""},
+            json={
+                **ADMISSION,
+                "application_type": "programme",
+                "education": education,
+                "message": "",
+            },
         )
         assert response.status_code == 201
         assert "message" not in response.json()

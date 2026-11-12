@@ -2,7 +2,6 @@ from typing import TypeVar
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.identifiers import UUIDPrimaryKeyMixin
@@ -16,10 +15,7 @@ def get_record_by_id(
     try:
         identifier = UUID(record_id)
     except ValueError:
-        if not record_id.isdecimal() or int(record_id) < 1:
-            raise HTTPException(
-                status_code=422,
-                detail="ID must be a UUID or a positive legacy integer",
-            )
-        return session.scalar(select(model).where(model.legacy_id == int(record_id)))
+        if record_id.isdecimal() and int(record_id) > 0:
+            return None
+        raise HTTPException(status_code=422, detail="ID must be a UUID")
     return session.get(model, identifier)

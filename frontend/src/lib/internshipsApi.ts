@@ -5,6 +5,7 @@ import {
 
 export type Internship = {
   id: string;
+  accepted_count?: number;
   title: string;
   slug: string;
   short_description: string;

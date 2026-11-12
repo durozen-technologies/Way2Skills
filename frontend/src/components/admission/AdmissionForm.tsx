@@ -11,7 +11,6 @@ import {
 import {
   createFormSubmissionId,
   submitWay2SkillsForm,
-  Way2SkillsSubmissionError,
 } from "@/lib/way2skillsFormSubmission";
 import {
   validateName,
@@ -23,7 +22,11 @@ import {
   validateAdmissionMessage,
   VALID_EDUCATION_LEVELS,
 } from "@/lib/formValidation";
-import { courseRequest, type Course } from "@/lib/coursesApi";
+import {
+  courseRequest,
+  type Course,
+  type SubmissionReceipt,
+} from "@/lib/coursesApi";
 import {
   internshipRequest,
   type Internship,
@@ -73,7 +76,6 @@ export default function AdmissionForm() {
   } | null>(null);
 
   const isSubmitting = useRef(false);
-  const submissionId = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -236,31 +238,51 @@ export default function AdmissionForm() {
     }
 
     isSubmitting.current = true;
-    setStatus({ type: "loading", message: "Sending your admission enquiry..." });
+    setStatus({ type: "loading", message: "Submitting your admission enquiry..." });
 
-    const requestId =
-      submissionId.current ?? (submissionId.current = createFormSubmissionId());
+    const admissionPayload = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      education: formData.education.trim(),
+      course: formData.course.trim(),
+      application_type: programmeType,
+      message: formData.message.trim(),
+    };
 
     try {
-      await submitWay2SkillsForm(
-        {
-          formType: "admission",
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          education: formData.education.trim(),
-          course:
-            programmeType === "internship"
-              ? `Internship: ${internships.find((item) => item.slug === formData.course)?.title ?? formData.course.trim()}`.slice(
-                  0,
-                  100
-                )
-              : formData.course.trim(),
-          message: formData.message.trim(),
-        },
-        requestId
-      );
-      submissionId.current = null;
+      await courseRequest<SubmissionReceipt>("/api/admissions", undefined, {
+        method: "POST",
+        body: JSON.stringify(admissionPayload),
+      });
+      void Promise.resolve()
+        .then(() =>
+          submitWay2SkillsForm(
+            {
+              formType: "admission",
+              name: admissionPayload.name,
+              email: admissionPayload.email,
+              phone: admissionPayload.phone,
+              education: admissionPayload.education,
+              course:
+                programmeType === "internship"
+                  ? `Internship: ${internships.find((item) => item.slug === formData.course)?.title ?? formData.course}`.slice(
+                      0,
+                      100
+                    )
+                  : formData.course,
+              message: admissionPayload.message,
+            },
+            createFormSubmissionId()
+          )
+        )
+        .catch((error: unknown) => {
+          console.error(
+            "Admission notification failed after the enquiry was saved.",
+            error
+          );
+        });
+
       setFormData(initialFormData);
       setTouched({
         name: false,
@@ -273,22 +295,16 @@ export default function AdmissionForm() {
       setStatus({
         type: "success",
         message:
-          "Both notification emails were accepted by the email service. Inbox delivery is not guaranteed.",
+          "Your admission enquiry was saved.",
       });
     } catch (error) {
-      if (error instanceof Way2SkillsSubmissionError) {
-        if (error.outcome === "rejected") submissionId.current = null;
-        setStatus({
-          type: error.outcome === "partial" ? "partial" : "error",
-          message: error.message,
-        });
-      } else {
-        setStatus({
-          type: "error",
-          message:
-            "We couldn't verify whether the notifications were sent. Contact admissions before retrying.",
-        });
-      }
+      setStatus({
+        type: "error",
+        message:
+          error instanceof Error
+            ? `We couldn't save your admission enquiry. ${error.message}`
+            : "We couldn't save your admission enquiry. Please check your connection and try again.",
+      });
     } finally {
       isSubmitting.current = false;
     }

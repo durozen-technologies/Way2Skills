@@ -12,6 +12,26 @@ existing integration. No email delivery is implemented here.
 - Python 3.12 (Python 3.11+ is required by the code)
 - PostgreSQL 15 or newer, running locally
 
+## Docker Compose
+
+Docker Compose reads Docker settings from one `.env` file in the repository
+root. Create it from the template, then set a strong PostgreSQL password and
+JWT signing key:
+
+```powershell
+Set-Location 'C:\Users\user\OneDrive\Desktop\way2skills'
+Copy-Item .env.example .env
+notepad .env
+docker compose up --build
+```
+
+Keep the PostgreSQL username, password, and database consistent between
+`POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB` and `DATABASE_URL`. The
+database hostname in `DATABASE_URL` must be `db`, and
+`NEXT_PUBLIC_WAY2SKILLS_API_URL` must be reachable from the browser. Do not
+commit the root `.env` file. The backend and frontend env files are separate
+and only used when running those apps directly outside Docker.
+
 ## 1. Create and activate a virtual environment
 
 ```powershell
@@ -107,13 +127,16 @@ alembic upgrade head
 course-details migrations, followed by the archiveable course-category
 registry, the course-content limits migration, the optional legacy course
 internship-period migration, and separate internship catalogue, cover image,
-and learning outcome migrations.
+learning outcome, certificate, admission application-type, and admission and
+contact legacy-ID removal migrations, the course and internship string-list
+conversion to PostgreSQL `TEXT[]` columns, and the final removal of legacy IDs
+from all remaining tables.
 The category migration copies existing distinct category names into the
 registry; it does not modify or delete course rows.
 The UUID migration assigns UUID primary keys to admins, contacts, admissions,
-and courses while retaining each existing integer ID in a unique `legacy_id`
-column. Existing rows and their data are preserved; legacy integer record URLs
-and admin tokens continue to resolve through that mapping.
+and courses, initially retaining each existing integer ID in a unique
+`legacy_id` column. Later migrations remove `legacy_id` from every table and
+remove legacy integer-ID lookups; all records use UUID IDs.
 The feedback migration adds one new table with UUID IDs and pending approval as
 the default. It does not alter or remove existing tables or records.
 The course-details migration adds nullable curriculum and benefits fields and a
@@ -133,6 +156,12 @@ does not convert or modify existing course records.
 Later internship migrations add an optional cover image URL and a list of
 learning outcomes while preserving existing internship records.
 Existing description content is preserved.
+The admission application-type migration distinguishes course, programme, and
+internship applications, preserves existing records, and expands the saved
+offering slug to match the catalogue limit.
+The course and internship array migration converts certificate, syllabus,
+skill, and learning-outcome string lists from JSON to PostgreSQL text arrays
+without changing their API representation.
 
 ## 6. Create the first administrator
 
@@ -178,8 +207,8 @@ All API routes are under `/api`:
 | Method | Path | Access | Purpose |
 | --- | --- | --- | --- |
 | `GET` | `/health` | Public | Application and database connectivity |
-| `POST` | `/contact` | Public | Create a contact enquiry |
-| `POST` | `/admissions` | Public | Create an admission application |
+| `POST` | `/contact` | Public | Save a contact enquiry |
+| `POST` | `/admissions` | Public | Save a course, programme, or internship application |
 | `GET` | `/feedback` | Public | List approved student feedback |
 | `POST` | `/feedback` | Public | Submit feedback for review |
 | `POST` | `/auth/login` | Public | Authenticate an active admin and return a short-lived JWT |
@@ -252,7 +281,12 @@ details page.
 
 Contact submission accepts `name`, `email`, `message`, and optional `phone` and
 `topic`. Admission submission accepts `name`, `email`, `phone`, `education`,
-`course` (the published course/programme slug), and optional `message`.
+`course` (the published offering slug), and optional `message`. The optional
+`application_type` is `course`, `programme`, or `internship`; when omitted,
+the backend accepts a published course or programme and records its actual
+type. Website contact and admission forms save to PostgreSQL before sending
+their existing Apps Script email notifications. Feedback submissions also save
+to PostgreSQL and await admin approval.
 Supported education values are `school`, `diploma`, `undergraduate`,
 `graduate`, and `other`. Public submission responses contain only the new
 record ID, initial status, and creation time; they do not echo submitted

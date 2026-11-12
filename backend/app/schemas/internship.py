@@ -181,3 +181,7 @@ class InternshipRead(ORMModel):
     is_published: bool
     created_at: datetime
     updated_at: datetime
+
+
+class InternshipCardRead(InternshipRead):
+    accepted_count: int = 0

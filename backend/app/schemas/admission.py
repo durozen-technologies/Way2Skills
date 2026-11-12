@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import EmailStr, Field, field_validator
 
-from app.models.enums import AdmissionStatus
+from app.models.enums import AdmissionStatus, CourseType
 from app.schemas.common import APIModel, ORMModel
 
 
@@ -18,6 +18,7 @@ class AdmissionCreate(APIModel):
         max_length=180,
         pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$",
     )
+    application_type: CourseType | None = None
     message: str | None = Field(default=None, max_length=2000)
 
     @field_validator("name")
@@ -58,6 +59,7 @@ class AdmissionRead(ORMModel):
     phone: str
     education: str
     course: str
+    application_type: CourseType
     message: str | None
     status: AdmissionStatus
     created_at: datetime

@@ -4,7 +4,7 @@ from sqlalchemy import CheckConstraint, DateTime, Index, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.enums import AdmissionStatus
+from app.models.enums import AdmissionStatus, CourseType
 from app.models.identifiers import UUIDPrimaryKeyMixin
 
 
@@ -15,6 +15,10 @@ class Admission(UUIDPrimaryKeyMixin, Base):
             "status IN ('pending', 'in_progress', 'accepted', 'rejected')",
             name="valid_status",
         ),
+        CheckConstraint(
+            "application_type IN ('course', 'internship', 'programme')",
+            name="valid_application_type",
+        ),
         Index("ix_admissions_created_at", "created_at"),
         Index("ix_admissions_status_created_at", "status", "created_at"),
     )
@@ -23,7 +27,13 @@ class Admission(UUIDPrimaryKeyMixin, Base):
     email: Mapped[str] = mapped_column(String(254), nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String(10), nullable=False)
     education: Mapped[str] = mapped_column(String(30), nullable=False)
-    course: Mapped[str] = mapped_column(String(100), nullable=False)
+    course: Mapped[str] = mapped_column(String(180), nullable=False)
+    application_type: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default=CourseType.COURSE,
+        server_default=CourseType.COURSE.value,
+    )
     message: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(
         String(20),

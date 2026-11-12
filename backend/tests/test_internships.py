@@ -86,6 +86,14 @@ def test_admin_internship_create_update_publish_filter_and_delete(client, auth_h
         )
         assert stored is not None
         assert stored.duration_months == 6
+        assert stored.skills == ["React", "TypeScript"]
+        assert stored.certificates == [
+            CourseCertificate.INTERNSHIP_COMPLETION.value
+        ]
+        assert stored.learning_outcomes == [
+            "Build accessible interfaces",
+            "Contribute to code reviews",
+        ]
 
     deleted = test_client.delete(
         f"/api/admin/internships/{internship_id}", headers=auth_headers

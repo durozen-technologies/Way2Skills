@@ -257,6 +257,10 @@ export default function CourseCard(props: CourseCardProps) {
         </div>
       )}
 
+      <p className="relative z-10 mt-3 text-xs font-semibold text-white/75">
+        {internship?.accepted_count ?? course?.accepted_count ?? 0} enrolled
+      </p>
+
       <div className="relative z-10 mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3.5 sm:mt-auto sm:pt-5">
         <Link
           className={`inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold transition-colors duration-300 sm:text-sm ${theme.secondary}`}

@@ -11,7 +11,7 @@ from app.db.session import get_session
 from app.models.admission import Admission
 from app.models.course import Course
 from app.models.course_category import CourseCategory
-from app.models.enums import CourseType
+from app.models.enums import AdmissionStatus, CourseType
 from app.schemas.admin import PageResponse
 from app.schemas.course import CourseCreate, CourseRead, CourseUpdate
 
@@ -71,8 +71,37 @@ def list_courses(
         .offset(offset)
         .limit(limit)
     ).all()
+    accepted_counts = {}
+    if records:
+        rows = session.execute(
+            select(
+                Admission.course,
+                Admission.application_type,
+                func.count(Admission.id),
+            )
+            .where(
+                Admission.status == AdmissionStatus.ACCEPTED,
+                Admission.course.in_([record.slug for record in records]),
+                Admission.application_type.in_(
+                    [record.course_type for record in records]
+                ),
+            )
+            .group_by(Admission.course, Admission.application_type)
+        )
+        accepted_counts = {
+            (application_type, slug): count
+            for slug, application_type, count in rows.all()
+        }
     return PageResponse(
-        items=[CourseRead.model_validate(item).model_dump(mode="json") for item in records],
+        items=[
+            {
+                **CourseRead.model_validate(item).model_dump(mode="json"),
+                "accepted_count": accepted_counts.get(
+                    (item.course_type, item.slug), 0
+                ),
+            }
+            for item in records
+        ],
         total=total,
         limit=limit,
         offset=offset,

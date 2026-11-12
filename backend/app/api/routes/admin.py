@@ -1,4 +1,4 @@
-from typing import Annotated, TypeVar
+from typing import Annotated, Literal, TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import func, or_, select
@@ -10,7 +10,7 @@ from app.db.session import get_session
 from app.models.admin import Admin
 from app.models.admission import Admission
 from app.models.contact import Contact
-from app.models.enums import AdmissionStatus, ContactStatus
+from app.models.enums import AdmissionStatus, ContactStatus, CourseType
 from app.schemas.admission import AdmissionRead, AdmissionStatusUpdate
 from app.schemas.admin import DashboardResponse, PageResponse
 from app.schemas.contact import ContactRead, ContactStatusUpdate
@@ -27,6 +27,7 @@ def _page_response(
     offset: int,
     search: str | None,
     status_filter: str | None,
+    application_types: tuple[str, ...] | None = None,
 ) -> PageResponse:
     conditions = []
     if search:
@@ -40,6 +41,8 @@ def _page_response(
         )
     if status_filter:
         conditions.append(model.status == status_filter)
+    if application_types:
+        conditions.append(Admission.application_type.in_(application_types))
     total = session.scalar(select(func.count()).select_from(model).where(*conditions)) or 0
     records = session.scalars(
         select(model)
@@ -94,7 +97,13 @@ def list_admissions(
     offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
     search: Annotated[str | None, Query(max_length=100)] = None,
     status_filter: Annotated[AdmissionStatus | None, Query(alias="status")] = None,
+    application_group: Literal["course", "internship"] | None = None,
 ) -> PageResponse:
+    application_types = None
+    if application_group == "internship":
+        application_types = (CourseType.INTERNSHIP.value,)
+    elif application_group == "course":
+        application_types = (CourseType.COURSE.value, CourseType.PROGRAMME.value)
     return _page_response(
         session,
         Admission,
@@ -103,6 +112,7 @@ def list_admissions(
         offset,
         search,
         status_filter.value if status_filter else None,
+        application_types,
     )
 
 

@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import get_current_admin
 from app.api.identifiers import get_record_by_id
 from app.db.session import get_session
+from app.models.admission import Admission
+from app.models.enums import AdmissionStatus, CourseType
 from app.models.internship import Internship
 from app.schemas.admin import PageResponse
 from app.schemas.internship import InternshipCreate, InternshipRead, InternshipUpdate
@@ -53,9 +55,24 @@ def list_internships(
         .offset(offset)
         .limit(limit)
     ).all()
+    accepted_counts = {}
+    if records:
+        rows = session.execute(
+            select(Admission.course, func.count(Admission.id))
+            .where(
+                Admission.application_type == CourseType.INTERNSHIP.value,
+                Admission.status == AdmissionStatus.ACCEPTED,
+                Admission.course.in_([record.slug for record in records]),
+            )
+            .group_by(Admission.course)
+        )
+        accepted_counts = dict(rows.all())
     return PageResponse(
         items=[
-            InternshipRead.model_validate(item).model_dump(mode="json")
+            {
+                **InternshipRead.model_validate(item).model_dump(mode="json"),
+                "accepted_count": accepted_counts.get(item.slug, 0),
+            }
             for item in records
         ],
         total=total,

@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, BriefcaseBusiness, CircleCheck, FileEdit } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  BriefcaseBusiness,
+  CircleCheck,
+  ClipboardList,
+  FileEdit,
+  MessageSquareText,
+} from "lucide-react";
 import { courseRequest, type CoursePage } from "@/lib/coursesApi";
 import { type InternshipPage } from "@/lib/internshipsApi";
 import { useAdminAuth, useAdminPage } from "@/components/admin/AdminAuth";
@@ -12,6 +20,8 @@ type DashboardSummary = {
   published: number;
   drafts: number;
   internships: number;
+  enquiries: number;
+  admissions: number;
 };
 
 export default function AdminPage() {
@@ -38,14 +48,20 @@ export default function AdminPage() {
         "/api/admin/internships?limit=1",
         token
       ),
+      courseRequest<{ contacts_total: number; admissions_total: number }>(
+        "/api/admin/dashboard",
+        token
+      ),
     ])
-      .then(([all, published, drafts, internships]) => {
+      .then(([all, published, drafts, internships, records]) => {
         if (active) {
           setSummary({
             total: all.total,
             published: published.total,
             drafts: drafts.total,
             internships: internships.total,
+            enquiries: records.contacts_total,
+            admissions: records.admissions_total,
           });
         }
       })
@@ -72,6 +88,8 @@ export default function AdminPage() {
         { label: "Published", value: summary.published, icon: CircleCheck },
         { label: "Drafts", value: summary.drafts, icon: FileEdit },
         { label: "Internships", value: summary.internships, icon: BriefcaseBusiness },
+        { label: "Enquiries", value: summary.enquiries, icon: MessageSquareText },
+        { label: "Admissions", value: summary.admissions, icon: ClipboardList },
       ]
     : [];
 
@@ -82,7 +100,7 @@ export default function AdminPage() {
           Overview
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Current course and internship records from your Way2Skills database.
+          Course, internship, enquiry, and admission totals from your database.
         </p>
       </div>
 
@@ -94,32 +112,11 @@ export default function AdminPage() {
         <p className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800" role="alert">
           Dashboard data is unavailable. {error}
         </p>
-      ) : summary && summary.total === 0 && summary.internships === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
-          <h3 className="font-semibold text-slate-900">No records yet</h3>
-          <p className="mt-1 text-sm text-slate-600">
-            Add a course or internship to begin managing your catalogue.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
-              href="/admin/courses"
-            >
-              Add a course <ArrowRight aria-hidden="true" size={16} />
-            </Link>
-            <Link
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              href="/admin/internships"
-            >
-              Add an internship <ArrowRight aria-hidden="true" size={16} />
-            </Link>
-          </div>
-        </div>
       ) : (
         <>
           <section
-            aria-label="Course and internship totals"
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            aria-label="Database totals"
+            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
           >
             {stats.map(({ label, value, icon: Icon }) => (
               <article

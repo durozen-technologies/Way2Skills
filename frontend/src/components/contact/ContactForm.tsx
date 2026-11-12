@@ -2,9 +2,12 @@
 
 import { useRef, useState, type ChangeEvent, type FocusEvent, type FormEvent } from "react";
 import {
+  courseRequest,
+  type SubmissionReceipt,
+} from "@/lib/coursesApi";
+import {
   createFormSubmissionId,
   submitWay2SkillsForm,
-  Way2SkillsSubmissionError,
 } from "@/lib/way2skillsFormSubmission";
 import {
   validateName,
@@ -42,12 +45,11 @@ export default function ContactForm() {
     message: false,
   });
   const [status, setStatus] = useState<{
-    type: "loading" | "success" | "error" | "partial";
+    type: "loading" | "success" | "error";
     message: string;
   } | null>(null);
 
   const isSubmitting = useRef(false);
-  const submissionId = useRef<string | null>(null);
 
   // Compute live validation errors
   const errors = {
@@ -111,24 +113,30 @@ export default function ContactForm() {
     }
 
     isSubmitting.current = true;
-    setStatus({ type: "loading", message: "Sending your enquiry..." });
-
-    const requestId =
-      submissionId.current ?? (submissionId.current = createFormSubmissionId());
+    setStatus({ type: "loading", message: "Submitting your enquiry..." });
+    const contactPayload = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      topic: formData.topic.trim(),
+      message: formData.message.trim(),
+    };
 
     try {
-      await submitWay2SkillsForm(
-        {
-          formType: "contact",
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          topic: formData.topic.trim(),
-          message: formData.message.trim(),
-        },
-        requestId
-      );
-      submissionId.current = null;
+      await courseRequest<SubmissionReceipt>("/api/contact", undefined, {
+        method: "POST",
+        body: JSON.stringify(contactPayload),
+      });
+      void Promise.resolve()
+        .then(() =>
+          submitWay2SkillsForm(
+            { formType: "contact", ...contactPayload },
+            createFormSubmissionId()
+          )
+        )
+        .catch((error: unknown) => {
+          console.error("Contact notification failed after the enquiry was saved.", error);
+        });
       setFormData(initialFormData);
       setTouched({
         name: false,
@@ -139,23 +147,16 @@ export default function ContactForm() {
       });
       setStatus({
         type: "success",
-        message:
-          "Your enquiry was sent successfully! Our team will get back to you shortly.",
+        message: "Your enquiry was submitted successfully.",
       });
     } catch (error) {
-      if (error instanceof Way2SkillsSubmissionError) {
-        if (error.outcome === "rejected") submissionId.current = null;
-        setStatus({
-          type: error.outcome === "partial" ? "partial" : "error",
-          message: error.message,
-        });
-      } else {
-        setStatus({
-          type: "error",
-          message:
-            "We couldn't verify whether the notification was sent. Contact us before retrying.",
-        });
-      }
+      setStatus({
+        type: "error",
+        message:
+          error instanceof Error
+            ? `We couldn't submit your enquiry. ${error.message}`
+            : "We couldn't submit your enquiry. Please check your connection and try again.",
+      });
     } finally {
       isSubmitting.current = false;
     }
@@ -394,17 +395,17 @@ export default function ContactForm() {
       {status && (
         <p
           role={
-            status.type === "error" || status.type === "partial"
+            status.type === "error"
               ? "alert"
               : "status"
           }
           aria-live={
-            status.type === "error" || status.type === "partial"
+            status.type === "error"
               ? "assertive"
               : "polite"
           }
           className={`mt-4 rounded-xl border p-3 text-sm leading-6 ${
-            status.type === "error" || status.type === "partial"
+            status.type === "error"
               ? "border-red-300/20 bg-red-300/10 text-red-100"
               : "border-sky-300/20 bg-sky-300/10 text-sky-100"
           }`}
