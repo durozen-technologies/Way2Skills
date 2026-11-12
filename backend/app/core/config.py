@@ -1,6 +1,5 @@
 from functools import lru_cache
-
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,9 +28,12 @@ class Settings(BaseSettings):
     @field_validator("way2skills_apps_script_web_app_url")
     @classmethod
     def validate_apps_script_url(cls, value: str | None) -> str | None:
-        if value is None or not value.strip():
+        if value is None:
             return None
-        parsed = urlsplit(value)
+        cleaned = unquote(value.strip()).strip().strip("'\"").strip()
+        if not cleaned:
+            return None
+        parsed = urlsplit(cleaned)
         if (
             parsed.scheme != "https"
             or parsed.hostname != "script.google.com"
@@ -45,7 +47,7 @@ class Settings(BaseSettings):
             raise ValueError(
                 "WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL must be an HTTPS Google Apps Script URL"
             )
-        return value.strip()
+        return cleaned
 
     @field_validator("frontend_origins")
     @classmethod
