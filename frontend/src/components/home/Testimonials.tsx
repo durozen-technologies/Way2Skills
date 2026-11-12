@@ -141,10 +141,11 @@ export default function Testimonials() {
     let active = true;
     courseRequest<Feedback[]>("/api/feedback")
       .then((result) => {
-        if (active) setFeedback(result);
+        if (active) setFeedback(Array.isArray(result) ? result : []);
       })
       .catch((requestError: unknown) => {
         if (active) {
+          setFeedback([]);
           setLoadError(
             requestError instanceof Error
               ? requestError.message

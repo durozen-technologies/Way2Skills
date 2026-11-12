@@ -15,7 +15,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - dokploy-network
+      - way2skills-internal
 
   backend:
     build:
@@ -24,7 +24,7 @@ services:
     image: way2skills-backend:v1
     container_name: way2skills-backend
     environment:
-      DB_HOST: db
+      DB_HOST: way2skills-db
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB:?Set POSTGRES_DB in the root .env file}
       DB_USER: ${POSTGRES_USER:?Set POSTGRES_USER in the root .env file}
@@ -46,6 +46,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
+      - way2skills-internal
       - dokploy-network
 
   frontend:
@@ -57,7 +58,7 @@ services:
     image: way2skills-frontend:v1
     container_name: way2skills-frontend
     environment:
-      INTERNAL_API_URL: http://backend:8000
+      INTERNAL_API_URL: http://way2skills-backend:8000
     expose:
       - 3000
     depends_on:
@@ -65,6 +66,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
+      - way2skills-internal
       - dokploy-network
 
 volumes:
@@ -72,5 +74,7 @@ volumes:
     name: way2skills_postgres_data
 
 networks:
+  way2skills-internal:
+    driver: bridge
   dokploy-network:
     external: true

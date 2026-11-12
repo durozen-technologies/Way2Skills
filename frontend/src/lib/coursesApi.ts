@@ -85,7 +85,7 @@ function getApiUrl(): string {
   }
   return (
     process.env.INTERNAL_API_URL?.trim().replace(/\/+$/, "") ||
-    "http://backend:8000"
+    "http://way2skills-backend:8000"
   );
 }
 
