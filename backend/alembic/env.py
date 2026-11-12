@@ -13,14 +13,17 @@ if config.config_file_name is not None:
 
 database_url = get_settings().database_url
 if not database_url:
-    raise RuntimeError("Set DATABASE_URL before running database migrations")
-config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+    raise RuntimeError(
+        "Set DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD before running database migrations"
+    )
+database_url_string = database_url.render_as_string(hide_password=False)
+config.set_main_option("sqlalchemy.url", database_url_string.replace("%", "%%"))
 target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=database_url,
+        url=database_url_string,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},

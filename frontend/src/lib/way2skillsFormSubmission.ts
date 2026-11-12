@@ -1,7 +1,5 @@
-const configuredWebAppUrl =
-  process.env.NEXT_PUBLIC_WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL?.trim() ?? "";
-
-export const WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL = configuredWebAppUrl;
+const configuredApiUrl =
+  process.env.NEXT_PUBLIC_WAY2SKILLS_API_URL?.trim().replace(/\/+$/, "") ?? "";
 
 export type Way2SkillsFormPayload =
   | {
@@ -52,12 +50,22 @@ export function createFormSubmissionId(): string {
   return crypto.randomUUID();
 }
 
+<<<<<<< HEAD
 function isAppsScriptOrigin(origin: string): boolean {
   return (
     origin === "https://script.google.com" ||
     origin === "https://script.googleusercontent.com" ||
     /^https:\/\/(?:[a-z0-9-]+\.)*(?:google\.com|googleusercontent\.com)$/i.test(origin)
   );
+=======
+function isFormSubmissionApiOrigin(origin: string): boolean {
+  if (!configuredApiUrl) return false;
+  try {
+    return origin === new URL(configuredApiUrl).origin;
+  } catch {
+    return false;
+  }
+>>>>>>> 2695ec9 (evn updates)
 }
 
 function isAppsScriptResponse(value: unknown): value is AppsScriptResponse {
@@ -103,7 +111,7 @@ export function submitWay2SkillsForm(
   payload: Way2SkillsFormPayload,
   requestId: string
 ): Promise<void> {
-  if (!WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL) {
+  if (!configuredApiUrl) {
     return Promise.reject(
       new Way2SkillsSubmissionError(
         "Form submission is not configured. Please contact us directly.",
@@ -123,7 +131,7 @@ export function submitWay2SkillsForm(
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL;
+    form.action = `${configuredApiUrl}/api/form-submissions`;
     form.target = targetName;
     form.enctype = "application/x-www-form-urlencoded";
     form.hidden = true;
@@ -162,7 +170,12 @@ export function submitWay2SkillsForm(
 
     function handleMessage(event: MessageEvent<unknown>) {
       if (
+<<<<<<< HEAD
         !isAppsScriptOrigin(event.origin) ||
+=======
+        event.source !== iframe.contentWindow ||
+        !isFormSubmissionApiOrigin(event.origin) ||
+>>>>>>> 2695ec9 (evn updates)
         !isAppsScriptResponse(event.data) ||
         event.data.requestId !== requestId
       ) {

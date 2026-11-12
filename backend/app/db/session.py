@@ -15,7 +15,9 @@ class DatabaseConfigurationError(RuntimeError):
 def get_engine() -> Engine:
     database_url = get_settings().database_url
     if not database_url:
-        raise DatabaseConfigurationError("DATABASE_URL is not configured")
+        raise DatabaseConfigurationError(
+            "DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD must be configured"
+        )
     return create_engine(database_url, pool_pre_ping=True)
 
 
