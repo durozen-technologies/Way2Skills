@@ -62,3 +62,8 @@ services:
 volumes:
   way2skills_postgres_data:
     name: way2skills_postgres_data
+
+networks:
+  default:
+  dokker_network:
+    external: true
