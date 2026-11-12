@@ -11,10 +11,16 @@ from app.api.routes import (
     contact,
     courses,
     feedback,
+    form_submissions,
     health,
 )
 
 api_router = APIRouter(prefix="/api")
+api_router.include_router(
+    form_submissions.router,
+    prefix="/form-submissions",
+    tags=["form submissions"],
+)
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
 api_router.include_router(feedback.router, prefix="/feedback", tags=["feedback"])

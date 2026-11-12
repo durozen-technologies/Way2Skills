@@ -34,7 +34,7 @@ def create_admin() -> int:
             session.add(Admin(email=email, password_hash=hash_password(password)))
             session.commit()
     except DatabaseConfigurationError:
-        print("DATABASE_URL is not configured.", file=sys.stderr)
+        print("Database connection settings are not configured.", file=sys.stderr)
         return 1
     except SQLAlchemyError:
         print("Unable to create the admin account using the configured database.", file=sys.stderr)

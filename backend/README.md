@@ -25,9 +25,11 @@ notepad .env
 docker compose up --build
 ```
 
-Keep the PostgreSQL username, password, and database consistent between
-`POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB` and `DATABASE_URL`. The
-database hostname in `DATABASE_URL` must be `db`, and
+The backend receives database host and port from Docker Compose and uses
+`POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` for its database
+credentials. The root `.env` therefore does not need a database URL. The
+`WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL` belongs in the root `.env` and is passed
+only to the backend; form submissions are relayed through the API. The
 `NEXT_PUBLIC_WAY2SKILLS_API_URL` must be reachable from the browser. Do not
 commit the root `.env` file. The backend and frontend env files are separate
 and only used when running those apps directly outside Docker.
@@ -61,8 +63,10 @@ Copy-Item .env.example .env
 notepad .env
 ```
 
-Set `DATABASE_URL` to the PostgreSQL role/database you create below. Generate a
-new private signing key and put its output in `JWT_SECRET` in `.env`:
+Set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for the
+PostgreSQL role/database you create below. Generate a new private signing key
+and put its output in `JWT_SECRET` in `.env`. Also set
+`WAY2SKILLS_APPS_SCRIPT_WEB_APP_URL` to the Google Apps Script deployment URL:
 
 ```powershell
 python -c "import secrets; print(secrets.token_urlsafe(48))"
@@ -84,10 +88,10 @@ omitted.
 
 `frontend/.env.example` documents
 `NEXT_PUBLIC_WAY2SKILLS_API_URL=http://127.0.0.1:8000`. Add that setting
-manually to the frontend's existing `.env.local` if needed; do not replace its
-existing Apps Script setting. The homepage, course details, internship listing,
-admission course selector, and admin course editor use this API. Admission
-submissions still use the existing Apps Script integration.
+manually to the frontend's existing `.env.local` if needed. The homepage,
+course details, internship listing, admission course selector, and admin course
+editor use this API. Contact and admission submissions are relayed by the API
+to the Apps Script URL configured only in the backend environment.
 
 The frontend admin dashboard is available at `/admin`. It uses the existing
 admin login and in-memory bearer token for dashboard records and course
@@ -113,9 +117,9 @@ CREATE DATABASE way2skills OWNER way2skills;
 \q
 ```
 
-Use the password you set only in the backend `DATABASE_URL` in `.env`, URL
-encoding special characters when needed. These commands create a new database;
-they do not drop, reset, or recreate any existing database.
+Use the password you set as `DB_PASSWORD` in the backend `.env`. These commands
+create a new database; they do not drop, reset, or recreate any existing
+database.
 
 ## 5. Run Alembic migrations
 

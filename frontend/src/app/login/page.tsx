@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer";
 import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Login | Way2Skills",
+  title: "Way2Skills",
   description:
     "Sign in to your Way2Skills account to access course modules, live sessions, assignments, and mentorship updates.",
 };
