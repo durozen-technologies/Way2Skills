@@ -1,5 +1,21 @@
-const configuredApiUrl =
-  process.env.NEXT_PUBLIC_WAY2SKILLS_API_URL?.trim().replace(/\/+$/, "") ?? "";
+function getFormApiUrl(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_WAY2SKILLS_API_URL?.trim().replace(/\/+$/, "") ?? "";
+
+  if (typeof window !== "undefined") {
+    if (
+      !configured ||
+      ((configured.includes("localhost:8000") ||
+        configured.includes("127.0.0.1:8000")) &&
+        window.location.hostname !== "localhost" &&
+        window.location.hostname !== "127.0.0.1")
+    ) {
+      return window.location.origin;
+    }
+    return configured;
+  }
+  return configured || "http://127.0.0.1:8000";
+}
 
 export type Way2SkillsFormPayload =
   | {
@@ -51,9 +67,10 @@ export function createFormSubmissionId(): string {
 }
 
 function isFormSubmissionApiOrigin(origin: string): boolean {
-  if (!configuredApiUrl) return false;
+  const apiUrl = getFormApiUrl();
+  if (!apiUrl) return false;
   try {
-    return origin === new URL(configuredApiUrl).origin;
+    return origin === new URL(apiUrl).origin;
   } catch {
     return false;
   }
@@ -102,7 +119,8 @@ export function submitWay2SkillsForm(
   payload: Way2SkillsFormPayload,
   requestId: string
 ): Promise<void> {
-  if (!configuredApiUrl) {
+  const apiUrl = getFormApiUrl();
+  if (!apiUrl) {
     return Promise.reject(
       new Way2SkillsSubmissionError(
         "Form submission is not configured. Please contact us directly.",
@@ -122,7 +140,7 @@ export function submitWay2SkillsForm(
 
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = `${configuredApiUrl}/api/form-submissions`;
+    form.action = `${apiUrl}/api/form-submissions`;
     form.target = targetName;
     form.enctype = "application/x-www-form-urlencoded";
     form.hidden = true;
