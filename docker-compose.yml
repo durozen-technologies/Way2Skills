@@ -56,6 +56,8 @@ services:
         NEXT_PUBLIC_WAY2SKILLS_API_URL: ${NEXT_PUBLIC_WAY2SKILLS_API_URL:-http://localhost:8000}
     image: way2skills-frontend:v1
     container_name: way2skills-frontend
+    environment:
+      INTERNAL_API_URL: http://backend:8000
     expose:
       - 3000
     depends_on:

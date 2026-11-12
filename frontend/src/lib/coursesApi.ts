@@ -59,8 +59,35 @@ export type CourseCategory = {
   course_count: number;
 };
 
-const API_URL =
-  process.env.NEXT_PUBLIC_WAY2SKILLS_API_URL?.trim().replace(/\/+$/, "") ?? "";
+function getApiUrl(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_WAY2SKILLS_API_URL?.trim().replace(/\/+$/, "") ?? "";
+
+  if (typeof window !== "undefined") {
+    if (
+      !configured ||
+      ((configured.includes("localhost:8000") ||
+        configured.includes("127.0.0.1:8000")) &&
+        window.location.hostname !== "localhost" &&
+        window.location.hostname !== "127.0.0.1")
+    ) {
+      return "";
+    }
+    return configured;
+  }
+
+  if (
+    configured &&
+    !configured.includes("localhost:8000") &&
+    !configured.includes("127.0.0.1:8000")
+  ) {
+    return configured;
+  }
+  return (
+    process.env.INTERNAL_API_URL?.trim().replace(/\/+$/, "") ||
+    "http://backend:8000"
+  );
+}
 
 function formatValidationErrors(errors: unknown): string | null {
   if (!Array.isArray(errors)) return null;
@@ -96,12 +123,7 @@ export async function courseRequest<T>(
   token?: string,
   init: RequestInit = {}
 ): Promise<T> {
-  if (!API_URL) {
-    throw new Error(
-      "Set NEXT_PUBLIC_WAY2SKILLS_API_URL to connect to the Way2Skills API."
-    );
-  }
-
+  const apiUrl = getApiUrl();
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
@@ -110,7 +132,7 @@ export async function courseRequest<T>(
 
   try {
     const response = await axios.request<unknown>({
-      url: `${API_URL}${path}`,
+      url: `${apiUrl}${path}`,
       method: init.method ?? "GET",
       data: init.body,
       headers: Object.fromEntries(headers.entries()),
