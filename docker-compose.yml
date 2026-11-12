@@ -21,7 +21,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: dharani8811/way2skills-backend:v1
+    image: way2skills-backend:v1
     container_name: way2skills-backend
     environment:
       DB_HOST: db
@@ -51,7 +51,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_WAY2SKILLS_API_URL: ${NEXT_PUBLIC_WAY2SKILLS_API_URL:-http://localhost:8000}
-    image: dharani8811/way2skills-frontend:v1
+    image: way2skills-frontend:v1
     container_name: way2skills-frontend
 
     depends_on:

@@ -50,14 +50,6 @@ export function createFormSubmissionId(): string {
   return crypto.randomUUID();
 }
 
-<<<<<<< HEAD
-function isAppsScriptOrigin(origin: string): boolean {
-  return (
-    origin === "https://script.google.com" ||
-    origin === "https://script.googleusercontent.com" ||
-    /^https:\/\/(?:[a-z0-9-]+\.)*(?:google\.com|googleusercontent\.com)$/i.test(origin)
-  );
-=======
 function isFormSubmissionApiOrigin(origin: string): boolean {
   if (!configuredApiUrl) return false;
   try {
@@ -65,7 +57,6 @@ function isFormSubmissionApiOrigin(origin: string): boolean {
   } catch {
     return false;
   }
->>>>>>> 2695ec9 (evn updates)
 }
 
 function isAppsScriptResponse(value: unknown): value is AppsScriptResponse {
@@ -152,7 +143,6 @@ export function submitWay2SkillsForm(
 
     let timeout: number;
     let settled = false;
-    let formSubmitted = false;
 
     function cleanup() {
       window.removeEventListener("message", handleMessage);
@@ -170,14 +160,11 @@ export function submitWay2SkillsForm(
 
     function handleMessage(event: MessageEvent<unknown>) {
       if (
-<<<<<<< HEAD
-        !isAppsScriptOrigin(event.origin) ||
-=======
         event.source !== iframe.contentWindow ||
         !isFormSubmissionApiOrigin(event.origin) ||
->>>>>>> 2695ec9 (evn updates)
         !isAppsScriptResponse(event.data) ||
-        event.data.requestId !== requestId
+        event.data.requestId !== requestId ||
+        !hasExpectedDeliveryStatus(payload.formType, event.data)
       ) {
         return;
       }
@@ -200,19 +187,6 @@ export function submitWay2SkillsForm(
       );
     }
 
-    // Secondary safety handler: if the browser blocks cross-origin iframe postMessage,
-    // Google Apps Script loading in the iframe indicates the submission finished.
-    iframe.addEventListener("load", () => {
-      if (!formSubmitted) return;
-      window.setTimeout(() => {
-        if (!settled) {
-          settled = true;
-          cleanup();
-          resolve();
-        }
-      }, 1500);
-    });
-
     window.addEventListener("message", handleMessage);
     timeout = window.setTimeout(() => {
       rejectOnce(
@@ -221,12 +195,11 @@ export function submitWay2SkillsForm(
           "uncertain"
         )
       );
-    }, 20000);
+    }, 45000);
 
     document.body.append(iframe, form);
 
     try {
-      formSubmitted = true;
       form.submit();
       form.remove();
     } catch {
